@@ -1,6 +1,15 @@
-resource "google_service_account" "default" {
-  account_id   = "service-account-id"
+resource "google_service_account" "gke_node" {
+  account_id   = "gke-node"
   display_name = "Service Account"
+}
+
+resource "google_project_iam_binding" "artifact_registry_reader" {
+  project = var.project
+  role = "roles/artifactregistry.reader"
+
+  members = [
+    "serviceAccount:${google_service_account.malware_scanner_sa.email}"
+  ]
 }
 
 resource "google_container_cluster" "production" {
