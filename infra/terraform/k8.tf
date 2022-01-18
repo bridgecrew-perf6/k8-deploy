@@ -4,7 +4,7 @@ resource "google_service_account" "gke_node" {
 }
 
 resource "google_project_iam_binding" "artifact_registry_reader" {
-  project = var.project
+  project = "k8-deploy-338617"
   role = "roles/artifactregistry.reader"
 
   members = [
