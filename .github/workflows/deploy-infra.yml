@@ -19,7 +19,7 @@ jobs:
 
     - name: Lint tf configs
       run: tflint
-      working-directory: terraform
+      working-directory: infra/terraform
 
   terraform:
     needs: lint-terraform
@@ -42,9 +42,9 @@ jobs:
 
       - name: Init Terraform
         run: terraform init
-        working-directory: terraform
+        working-directory: infra/terraform
 
       - name: Apply Infra Changes
         run: |
           terraform apply -auto-approve
-        working-directory: terraform
+        working-directory: infra/terraform
