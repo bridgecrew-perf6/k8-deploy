@@ -19,6 +19,9 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: {{ .Values.port }}
+          command: ["/bin/sh", "-c"]
+          args:
+            - node app.js
 
 ---
 
