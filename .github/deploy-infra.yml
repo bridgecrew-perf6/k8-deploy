@@ -1,0 +1,50 @@
+name: Deploy Infrastructure
+on:
+  push:
+    branches:
+      - develop
+      - ch-setup-gke
+    # paths:
+    #   - 'terraform'
+jobs:
+  lint-terraform:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - uses: terraform-linters/setup-tflint@v1
+      name: Setup TFLintd
+      with:
+        tflint_version: v0.29.0
+
+    - name: Lint tf configs
+      run: tflint
+      working-directory: terraform
+
+  terraform:
+    needs: lint-terraform
+    runs-on: ubuntu-latest
+    env:
+      GOOGLE_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Setup Terrafrom
+        uses: hashicorp/setup-terraform@v1
+
+      - id: 'auth'
+        uses: 'google-github-actions/auth@v0'
+        with:
+          credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v0'
+
+      - name: Init Terraform
+        run: terraform init
+        working-directory: terraform
+
+      - name: Apply Infra Changes
+        run: |
+          terraform apply -auto-approve
+        working-directory: terraform
