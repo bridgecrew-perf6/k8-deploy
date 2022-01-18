@@ -8,7 +8,7 @@ resource "google_project_iam_binding" "artifact_registry_reader" {
   role = "roles/artifactregistry.reader"
 
   members = [
-    "serviceAccount:${google_service_account.malware_scanner_sa.email}"
+    "serviceAccount:${google_service_account.gke_node.email}"
   ]
 }
 
@@ -34,7 +34,7 @@ resource "google_container_node_pool" "pool_one" {
     machine_type = "e2-micro"
 
     # Google recommends custom service accounts that have cloud-platform scope and permissions granted via IAM Roles.
-    service_account = google_service_account.default.email
+    service_account = google_service_account.gke_node.email
     oauth_scopes    = [
       "https://www.googleapis.com/auth/cloud-platform"
     ]
