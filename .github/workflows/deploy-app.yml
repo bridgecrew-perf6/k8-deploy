@@ -66,10 +66,10 @@ jobs:
           curl -sSLO https://werf.io/install.sh
           chmod +x install.sh
           ./install.sh --ci
-          source "$(~/bin/trdl use werf 1.2 stable)"
 
       - name: Deploy to Production cluster
         run: |
+          source "$(~/bin/trdl use werf 1.2 stable)"
           werf helm upgrade --install --atomic --timeout 20m \
           -f deployment-values.yml \
           --set image.tag=$(git rev-parse --short HEAD) \
