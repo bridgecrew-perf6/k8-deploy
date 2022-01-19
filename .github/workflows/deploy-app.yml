@@ -28,7 +28,7 @@ jobs:
 
       - name: Set up Docker Credentials
         run: |
-          echo "${{ secrets.GCP_CREDENTIALS }}" > ci-manager-sa.json
+          echo '${{ secrets.GCP_CREDENTIALS }}' > ci-manager-sa.json
           cat ci-manager-sa.json
           gcloud auth activate-service-account ci-manager --key-file=ci-manager-sa.json
           gcloud auth configure-docker
