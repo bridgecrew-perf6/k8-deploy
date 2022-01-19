@@ -5,8 +5,13 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
+  tls:
+    - hosts:
+      - "k8-deploy.otseobande.com"
+      secretName: k8-deploy-tls
   rules:
-  - http:
+  - host: "k8-deploy.otseobande.com"
+    http:
       paths:
       - path: /
         pathType: Prefix
