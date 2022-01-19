@@ -38,3 +38,37 @@ jobs:
 
       - name: Push Image
         run: docker push us-central1-docker.pkg.dev/k8-deploy-338617/app/backend:$(git rev-parse --short HEAD)
+
+  deploy:
+    needs: ["build"]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - id: 'auth'
+        uses: 'google-github-actions/auth@v0'
+        with:
+          credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v0'
+
+      - name: Setup kubectl
+        run: |
+          curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl
+          chmod +x ./kubectl
+          sudo mv ./kubectl /usr/local/bin/kubectl
+
+      - name: Set up k8 credentials
+        run: gcloud container clusters get-credentials production-cluster
+
+      - name: Install werf
+        run: |
+          curl -sSLO https://werf.io/install.sh
+          chmod +x install.sh
+
+      - name: Deploy to Production cluster
+        run: |
+          werf helm upgrade --install --atomic --timeout 20m \
+          -f deployment-values.yml \
+          --set image.tag=$(git rev-parse --short HEAD) \
+          k8-deploy infra/service-chart
