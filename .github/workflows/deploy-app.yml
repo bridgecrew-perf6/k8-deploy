@@ -10,28 +10,30 @@ on:
 
 jobs:
   build:
-    - uses: actions/checkout@v1
-    - name: Install Docker
-      run: |
-        curl -fsSL https://get.docker.com -o get-docker.sh
-        sh get-docker.sh
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install Docker
+        run: |
+          curl -fsSL https://get.docker.com -o get-docker.sh
+          sh get-docker.sh
 
-    - id: 'auth'
-      uses: 'google-github-actions/auth@v0'
-      with:
-        credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+      - id: 'auth'
+        uses: 'google-github-actions/auth@v0'
+        with:
+          credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
 
-    - name: 'Set up Cloud SDK'
-      uses: 'google-github-actions/setup-gcloud@v0'
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v0'
 
-    - name: Set up Docker Credentials
-      run: |
-        gcloud auth activate-service-account ci-manager
-        gcloud auth configure-docker
+      - name: Set up Docker Credentials
+        run: |
+          gcloud auth activate-service-account ci-manager
+          gcloud auth configure-docker
 
-    - name: Build and Tag Image
-      run: |
-        docker build . -t us-central1-docker.pkg.dev/k8-deploy-338617/app/backend:$(git rev-parse --short HEAD)
+      - name: Build and Tag Image
+        run: |
+          docker build . -t us-central1-docker.pkg.dev/k8-deploy-338617/app/backend:$(git rev-parse --short HEAD)
 
-    - name: Push Image
-      run: docker push us-central1-docker.pkg.dev/k8-deploy-338617/app/backend:$(git rev-parse --short HEAD)
+      - name: Push Image
+        run: docker push us-central1-docker.pkg.dev/k8-deploy-338617/app/backend:$(git rev-parse --short HEAD)
