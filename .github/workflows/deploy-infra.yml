@@ -3,9 +3,8 @@ on:
   push:
     branches:
       - main
-      - ch-setup-gke
-    # paths:
-    #   - 'terraform'
+    paths:
+      - 'infra/terraform/**'
 jobs:
   lint-terraform:
     runs-on: ubuntu-latest
