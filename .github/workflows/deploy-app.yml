@@ -29,8 +29,8 @@ jobs:
       - name: Set up Docker Credentials
         run: |
           echo '${{ secrets.GCP_CREDENTIALS }}' > ci-manager-sa.json
-          gcloud auth activate-service-account --key-file=ci-manager-sa.json
-          gcloud auth configure-docker
+          gcloud --quiet auth activate-service-account --key-file=ci-manager-sa.json
+          gcloud auth configure-docker us-central1-docker.pkg.dev
 
       - name: Build and Tag Image
         run: |
