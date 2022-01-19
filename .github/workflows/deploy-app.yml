@@ -62,7 +62,11 @@ jobs:
         run: gcloud container clusters get-credentials production-cluster --region us-central1
 
       - name: Install werf
-        run: curl -sSLO https://werf.io/install.sh && chmod +x install.sh
+        run: |
+          curl -sSLO https://werf.io/install.sh
+          chmod +x install.sh
+          ./install.sh --ci
+          source "$(~/bin/trdl use werf 1.2 stable)"
 
       - name: Deploy to Production cluster
         run: |
