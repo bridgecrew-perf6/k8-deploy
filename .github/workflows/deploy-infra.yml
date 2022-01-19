@@ -20,7 +20,7 @@ jobs:
       run: tflint
       working-directory: infra/terraform
 
-  terraform:
+  deploy-terraform:
     needs: lint-terraform
     runs-on: ubuntu-latest
     env:
