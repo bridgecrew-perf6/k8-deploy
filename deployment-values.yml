@@ -1,0 +1,8 @@
+name: k8-deploy
+replicaCount: 1
+port: 3000
+image:
+  repository: us-central1-docker.pkg.dev/k8-deploy-338617/app/backend
+  pullPolicy: IfNotPresent
+  tag: latest
+

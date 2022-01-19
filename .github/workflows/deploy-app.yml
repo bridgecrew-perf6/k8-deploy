@@ -1,0 +1,76 @@
+name: Deploy App
+
+on:
+  workflow_run:
+    workflows: ["Test App", "Deploy Infrastructure"]
+    branches: [main]
+    types:
+      - completed
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install Docker
+        run: |
+          curl -fsSL https://get.docker.com -o get-docker.sh
+          sh get-docker.sh
+
+      - id: 'auth'
+        uses: 'google-github-actions/auth@v0'
+        with:
+          credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v0'
+
+      - name: Set up Docker Credentials
+        run: |
+          echo '${{ secrets.GCP_CREDENTIALS }}' > ci-manager-sa.json
+          gcloud --quiet auth activate-service-account --key-file=ci-manager-sa.json
+          gcloud auth configure-docker us-central1-docker.pkg.dev
+
+      - name: Build and Tag Image
+        run: |
+          docker build . -t us-central1-docker.pkg.dev/k8-deploy-338617/app/backend:$(git rev-parse --short HEAD)
+
+      - name: Push Image
+        run: docker push us-central1-docker.pkg.dev/k8-deploy-338617/app/backend:$(git rev-parse --short HEAD)
+
+  deploy:
+    needs: ["build"]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - id: 'auth'
+        uses: 'google-github-actions/auth@v0'
+        with:
+          credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v0'
+
+      - name: Setup kubectl
+        run: |
+          curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl
+          chmod +x ./kubectl
+          sudo mv ./kubectl /usr/local/bin/kubectl
+
+      - name: Set up k8 credentials
+        run: gcloud container clusters get-credentials production-cluster --region us-central1
+
+      - name: Install werf
+        run: |
+          curl -sSLO https://werf.io/install.sh
+          chmod +x install.sh
+          ./install.sh --ci
+
+      - name: Deploy to Production cluster
+        run: |
+          source "$(~/bin/trdl use werf 1.2 stable)"
+          werf helm upgrade --install --atomic --timeout 20m \
+          -f deployment-values.yml \
+          --set image.tag=$(git rev-parse --short HEAD) \
+          k8-deploy infra/service-chart
